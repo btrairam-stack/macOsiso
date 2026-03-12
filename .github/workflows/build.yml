@@ -10,11 +10,12 @@ jobs:
     steps:
       - name: Download Full Catalina Installer
         run: |
-          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallAssistant.pkg" -o ~/InstallAssistant.pkg
+          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallAssistant.pkg" -o /tmp/InstallAssistant.pkg
+          ls -la /tmp/InstallAssistant.pkg
 
       - name: Install Catalina App
         run: |
-          sudo installer -pkg ~/InstallAssistant.pkg -target /
+          sudo installer -pkg /tmp/InstallAssistant.pkg -target /
           ls /Applications/ | grep -i install
 
       - name: Create ISO
