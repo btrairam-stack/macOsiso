@@ -7,24 +7,17 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Clone and Download
+      - name: Download Catalina directly from Apple
         run: |
-          git clone https://github.com/corpnewt/gibMacOS.git
-          cd gibMacOS
-          python3 gibMacOS.py -v 10.15.7 -b 19H15 -j --no-interactive
-          echo "=== All downloaded files ==="
-          find . -type f | grep -v ".git" | grep -v ".py"
+          mkdir -p ~/catalina
+          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallESDDmg.pkg" -o ~/catalina/InstallESDDmg.pkg
+          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/BaseSystem.dmg" -o ~/catalina/BaseSystem.dmg
 
       - name: Create ISO
         run: |
-          PKG=$(find /Users/runner -name "InstallAssistant.pkg" 2>/dev/null | head -1)
-          if [ -z "$PKG" ]; then
-            PKG=$(find / -name "InstallAssistant.pkg" 2>/dev/null | head -1)
-          fi
-          echo "Found PKG: $PKG"
           hdiutil create -o /tmp/Catalina -size 8500m -volname "Catalina" -layout SPUD -fs HFS+J
           hdiutil attach /tmp/Catalina.dmg -noverify -mountpoint /Volumes/Catalina
-          sudo installer -pkg "$PKG" -target /Volumes/Catalina
+          sudo installer -pkg ~/catalina/InstallESDDmg.pkg -target /Volumes/Catalina
           hdiutil detach /Volumes/Catalina
           hdiutil convert /tmp/Catalina.dmg -format UDTO -o /tmp/CatalinaFinal
           mv /tmp/CatalinaFinal.cdr /tmp/Catalina.iso
