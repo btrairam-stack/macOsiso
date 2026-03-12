@@ -6,24 +6,22 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    timeout-minutes: 60
     steps:
-      - name: Download and Extract Catalina
+      - name: Download Full Catalina Installer
         run: |
-          mkdir -p ~/catalina
-          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallAssistantAuto.pkg" -o ~/catalina/InstallAssistantAuto.pkg
-          pkgutil --expand ~/catalina/InstallAssistantAuto.pkg ~/catalina/expanded
-          cd ~/catalina/expanded
-          cat Payload | gunzip -dc | cpio -i
-          ls -la
+          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallAssistant.pkg" -o ~/InstallAssistant.pkg
+
+      - name: Install Catalina App
+        run: |
+          sudo installer -pkg ~/InstallAssistant.pkg -target /
+          ls /Applications/ | grep -i install
 
       - name: Create ISO
         run: |
-          cd ~/catalina/expanded
-          APP=$(find . -name "Install macOS Catalina.app" -type d | head -1)
-          echo "Found app: $APP"
           hdiutil create -o /tmp/Catalina -size 8500m -volname "Install macOS Catalina" -layout SPUD -fs HFS+J
           hdiutil attach /tmp/Catalina.dmg -noverify -mountpoint /Volumes/Catalina
-          sudo "$APP/Contents/Resources/createinstallmedia" --volume /Volumes/Catalina --nointeraction
+          sudo /Applications/Install\ macOS\ Catalina.app/Contents/Resources/createinstallmedia --volume /Volumes/Catalina --nointeraction
           hdiutil detach /Volumes/"Install macOS Catalina"
           hdiutil convert /tmp/Catalina.dmg -format UDTO -o /tmp/CatalinaFinal
           mv /tmp/CatalinaFinal.cdr /tmp/Catalina.iso
