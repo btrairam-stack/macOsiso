@@ -7,17 +7,17 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Download Catalina directly from Apple
+      - name: Download Catalina from Apple
         run: |
           mkdir -p ~/catalina
-          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallESDDmg.pkg" -o ~/catalina/InstallESDDmg.pkg
-          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/BaseSystem.dmg" -o ~/catalina/BaseSystem.dmg
+          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallAssistantAuto.pkg" -o ~/catalina/InstallAssistantAuto.pkg
 
-      - name: Create ISO
+      - name: Install and Create ISO
         run: |
-          hdiutil create -o /tmp/Catalina -size 8500m -volname "Catalina" -layout SPUD -fs HFS+J
+          sudo installer -pkg ~/catalina/InstallAssistantAuto.pkg -target /
+          hdiutil create -o /tmp/Catalina -size 8500m -volname "Install macOS Catalina" -layout SPUD -fs HFS+J
           hdiutil attach /tmp/Catalina.dmg -noverify -mountpoint /Volumes/Catalina
-          sudo installer -pkg ~/catalina/InstallESDDmg.pkg -target /Volumes/Catalina
+          sudo /Applications/Install\ macOS\ Catalina.app/Contents/Resources/createinstallmedia --volume /Volumes/Catalina --nointeraction
           hdiutil detach /Volumes/Catalina
           hdiutil convert /tmp/Catalina.dmg -format UDTO -o /tmp/CatalinaFinal
           mv /tmp/CatalinaFinal.cdr /tmp/Catalina.iso
