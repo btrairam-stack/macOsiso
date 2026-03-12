@@ -8,14 +8,9 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
-      - name: Download Full Catalina Installer
+      - name: Download Catalina via softwareupdate
         run: |
-          curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallAssistant.pkg" -o /tmp/InstallAssistant.pkg
-          ls -la /tmp/InstallAssistant.pkg
-
-      - name: Install Catalina App
-        run: |
-          sudo installer -pkg /tmp/InstallAssistant.pkg -target /
+          sudo softwareupdate --fetch-full-installer --full-installer-version 10.15.7
           ls /Applications/ | grep -i install
 
       - name: Create ISO
