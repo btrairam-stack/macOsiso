@@ -7,20 +7,29 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Download Catalina
+      - name: Download and Extract Catalina
         run: |
           mkdir -p ~/catalina
           curl -L "https://swcdn.apple.com/content/downloads/26/37/001-68446/r1dbqtmf3mtpikjnd04cq31p4jk91dceh8/InstallAssistantAuto.pkg" -o ~/catalina/InstallAssistantAuto.pkg
           pkgutil --expand ~/catalina/InstallAssistantAuto.pkg ~/catalina/expanded
-          ls -la ~/catalina/expanded
+          cd ~/catalina/expanded
+          cat Payload | gunzip -dc | cpio -i
+          ls -la
 
-      - name: Find and extract installer
+      - name: Create ISO
         run: |
-          find ~/catalina/expanded -name "*.pkg" -o -name "*.dmg" | head -20
-          find ~/catalina/expanded -type f | head -30
+          cd ~/catalina/expanded
+          APP=$(find . -name "Install macOS Catalina.app" -type d | head -1)
+          echo "Found app: $APP"
+          hdiutil create -o /tmp/Catalina -size 8500m -volname "Install macOS Catalina" -layout SPUD -fs HFS+J
+          hdiutil attach /tmp/Catalina.dmg -noverify -mountpoint /Volumes/Catalina
+          sudo "$APP/Contents/Resources/createinstallmedia" --volume /Volumes/Catalina --nointeraction
+          hdiutil detach /Volumes/"Install macOS Catalina"
+          hdiutil convert /tmp/Catalina.dmg -format UDTO -o /tmp/CatalinaFinal
+          mv /tmp/CatalinaFinal.cdr /tmp/Catalina.iso
 
-      - name: Upload findings
+      - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
-          name: findings
-          path: ~/catalina/expanded
+          name: Catalina-ISO
+          path: /tmp/Catalina.iso
