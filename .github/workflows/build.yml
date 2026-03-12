@@ -22,7 +22,7 @@ jobs:
           mv ~/Catalina.cdr ~/Catalina.iso
 
       - name: Upload ISO
-        uses: actions/upload-artifact@v3
+       uses: actions/upload-artifact@v4
         with:
           name: Catalina-ISO
           path: ~/Catalina.iso
