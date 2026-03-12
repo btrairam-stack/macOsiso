@@ -11,21 +11,24 @@ jobs:
         run: |
           git clone https://github.com/corpnewt/gibMacOS.git
           cd gibMacOS
-          python3 gibMacOS.py -n "10.15.7" --only-download
+          python3 gibMacOS.py -v 10.15.7 -b 19H15 --no-interactive
 
       - name: Create ISO
         run: |
-          PKG=$(find ~/gibMacOS/macOS\ Downloads -name "InstallAssistant.pkg" | head -1)
+          PKG=$(find ~/work/macOsiso/macOsiso/gibMacOS/macOS\ Downloads -name "InstallAssistant.pkg" 2>/dev/null | head -1)
+          if [ -z "$PKG" ]; then
+            PKG=$(find /Users/runner -name "InstallAssistant.pkg" 2>/dev/null | head -1)
+          fi
           echo "Found PKG: $PKG"
           hdiutil create -o /tmp/Catalina -size 8500m -volname "Catalina" -layout SPUD -fs HFS+J
           hdiutil attach /tmp/Catalina.dmg -noverify -mountpoint /Volumes/Catalina
           sudo installer -pkg "$PKG" -target /Volumes/Catalina
           hdiutil detach /Volumes/Catalina
-          hdiutil convert /tmp/Catalina.dmg -format UDTO -o ~/Catalina
-          mv ~/Catalina.cdr ~/Catalina.iso
+          hdiutil convert /tmp/Catalina.dmg -format UDTO -o /tmp/CatalinaFinal
+          mv /tmp/CatalinaFinal.cdr /tmp/Catalina.iso
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
           name: Catalina-ISO
-          path: ~/Catalina.iso
+          path: /tmp/Catalina.iso
