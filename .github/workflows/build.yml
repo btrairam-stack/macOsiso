@@ -7,18 +7,19 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Clone gibMacOS
+      - name: Clone and Download gibMacOS
         run: |
           git clone https://github.com/corpnewt/gibMacOS.git
           cd gibMacOS
           python3 gibMacOS.py -v 10.15.7 -b 19H15 --no-interactive
+          echo "=== Searching for downloaded files ==="
+          find . -name "*.pkg" 2>/dev/null
+          find . -name "*.dmg" 2>/dev/null
 
       - name: Create ISO
         run: |
-          PKG=$(find ~/work/macOsiso/macOsiso/gibMacOS/macOS\ Downloads -name "InstallAssistant.pkg" 2>/dev/null | head -1)
-          if [ -z "$PKG" ]; then
-            PKG=$(find /Users/runner -name "InstallAssistant.pkg" 2>/dev/null | head -1)
-          fi
+          cd gibMacOS
+          PKG=$(find . -name "InstallAssistant.pkg" 2>/dev/null | head -1)
           echo "Found PKG: $PKG"
           hdiutil create -o /tmp/Catalina -size 8500m -volname "Catalina" -layout SPUD -fs HFS+J
           hdiutil attach /tmp/Catalina.dmg -noverify -mountpoint /Volumes/Catalina
